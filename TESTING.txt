@@ -1,0 +1,389 @@
+TESTING DOCUMENT FOR PROJECT- COMMAND SHELL
+
+In this project, a shell has been implemented which replicates the behavior of
+a standard UNIX shell with the most basic features including command execution,
+argument parsing, environment variables, some variable commands, IO redirection
+etc.
+
+In order to test the shell, you can enter the following inputs and check the
+corresponding outputs. You can also test them using valgrind.
+
+You can type - make myshell , which will compile the source files and generate
+the executable named 'myshell'. Run it using './myshell'. You should see a prompt
+with the cursor blinking after the $ as shown below:
+myShell:<current_workin_directory> $ |
+Now you can test the following inputs below:
+
+1. If you simply press Enter, the shell will loop back and repeat the prompt.
+   This is in line with the behavior expected by any shell.
+
+2. INPUT: './myecho'
+   OUTPUT: 'argv[0]: ./myecho'
+   	   'Program exited with status 0'
+   This input will execute the binary myecho and print the output accordingly.
+   This will also print the exit status after the execution with the exit code.
+
+3. INPUT: '/bin/ls'
+   OUTPUT: Will print all the files/directories in the current working directory.
+   This input works just like the ls command in the shell, albeit with the full
+   path specified along with the exit status 0, which means binary executed successfully.
+
+4. INPUT: '/bin/pwd'
+   OUTPUT: will print the current working directory
+   This is also similar to the previous command where the shell can execute
+   any binary whose path is specified.
+
+5. INPUT: './execv'
+   OUTPUT: 'Usage: ./execv <file-to-exec>'
+   	   'Program exited with status 1'
+   The execve program tries to execute a program(binary executable) supplied
+   to it through command line argument. Hence it is not executing properly and
+   throuwing the Usage error. Also notice that Program exited with status 1, which
+   means and error occurred.
+
+6. INPUT: './execv myecho'
+   OUTPUT: 'argv[0]: myecho
+   	    argv[1]: hello
+	    argv[2]: world
+	    Program exited with status 0'
+   This time we have supplied execv with a command line argument myecho which
+   is the binary executable which it takes in. Hence it prints the arguments
+   myecho along with hello world in it exiting without errors. 
+
+7. INPUT: '/bin/grep -iRl main .'
+   OUTPUT: Prints all files with the word 'main' in them located in the current
+   directory.
+   This command calls the grep executable '/bin/grep' which takes in three arguments
+   and searches for the word main in the current directory printing all the files.
+   If there are any temporary files, it will exit with status 2, otherwise exiting
+   properly with status 0.
+
+8. INPUT: ls
+   OUTPUT: same as /bin/ls
+   This is because the shell has its own environment variable ECE551PATH set,
+   which looks for binaries/executables in the paths in orderand if found, executes them.
+
+9. INPUT: 'program'
+   OUTPUT: 'Command program not found.'
+   This is because there is no executable with the name program in the current
+   working directory or any of the paths defined in the environment variable.
+   
+10. INPUT: 'gcc --help'
+   OUTPUT: Prints the gcc help page
+   First the shell finds the gcc command in the binaries folder and executes
+   with arguments --help allowing it to parse the input command and accept the
+   argument --help, thereby invoking the help page.
+
+11. INPUT: 'man pwd'
+    OUTPUT: Opens the man page for pwd.
+    This is again executed in the way of the last command opening the man page
+    for pwd.
+
+12. INPUT: 'man               pwd'
+    OUTPUT: Same as 11. Notice that the spaces are ignored by the shell.
+
+13. INPUT: 'echo Duke University'
+    OUTPUT: 'Duke University
+    	    Program exited with status 0'
+    The echo command prints whatever arguments are supplied to it. In this case
+    Duke University.
+
+14. INPUT: 'echo Duke        University        ECE   551'
+    OUTPUT: 'Duke University ECE 551
+    	    Program exited with status 0'
+    Notice that this time, the output command line parser ignores the spaces
+    and prints them with a single space separator.
+
+15. INPUT: 'echo Duke \ University'
+    OUTPUT: 'Duke  University
+    	    Program exited with status 0'
+    Notice that the space after the escape sequence is taken into consideration
+    while printing the output consiered as an additional argument.
+
+16. INPUT: 'echo Duke\University'
+    OUTPUT: 'Duke\University'
+    Notice that this time, since there is no space after \, it is considered
+    as part of the input string by the parser.
+
+17. INPUT: 'echo \ \ \ Duke'
+    OUTPUT: '   Duke
+    	    Program exited with status 0'
+    Notice that the first three spaces with the escape sequence are considered
+    for printing as arguments by the echo command.
+
+18. INPUT: 'echo Duke      Unive\ rsity \ \ \ ECE551'
+    OUTPUT: 'Duke Unive rsity    ECE551
+    	    Program exited with status 0'
+    The relative position of the escape sequence does not affect the positioning
+    of spcaces supplied by the echo command.
+
+19. INPUT: 'cd /home/jt292/ece551'
+    OUTPUT: Goes to the directory '/home/jt292/ece551'
+    The change directory command invokes a the shell to change the working directory
+    to the one specified by the given path. Also notice that the prompt also
+    updates to the current working directory.
+
+20. INPUT: 'cd ../'
+    OUTPUT: Goes to one directory up, i.e. the parent directory.
+    This is correct as per the normal change directory operation. Notice that
+    the path in the prompt now is /home/jt292.
+
+21. INPUT: 'cd bin'
+    OUTPUT: 'bin' : No such file or directory.'
+    This too is correct because there is not folder named bin locate in the
+    current working directory.
+
+22. INPUT: 'cd /bin'
+    OUTPUT: Goes to the directory /bin/
+    This time the change directory command locates the directory /bin and
+    moves to that directory.
+
+23. INPUT: 'cd /bin /home'
+    OUTPUT: 'cd has more than two arguments. Error.'
+    This is correct because in the present myshell implementation, the cd
+    command takes only one input argument which can be either the relative or
+    the absolute path.
+
+24. INPUT: 'cd'
+    OUTPUT: Goes to the home directory, which is '/home/jt292'
+    If you just type cd in any shell, it takes you to the Home directory, which
+    in our case is the '/home/jt292' folder.
+
+25. INPUT: 'env'
+    OUTPUT: Prints the current ECE551PATH environment variable
+    The ECE551PATH variable was set during the beginning of the initialization
+    of environment variables when the shell is started.
+
+26. INPUT: 'set college Duke University'
+    OUTPUT: '//college is now "Duke University"
+    This statement will simply declare and set variable to its value. 
+
+27. INPUT: 'echo $college'
+    OUTPUT: 'Duke University
+    	    Program exited with status 0'
+    This statement prints the value of the variable we set in the previous
+    command and prints it. Notice that the '$' indicates that the argument
+    requested is a variable and is implicitly converted to its value by the
+    value parser within the shell. 
+
+28. INPUT: 'set college Duke        University       .
+    	    echo $college'
+    OUTPUT: '//college is now "Duke        University       ."
+    	     Duke        University       . 
+    	     Program exited with status 0'
+    Notice that the variable value can be any sequence of strings including
+    spaces in the command line. Hence printing the set variable $college prints
+    a value which includes spaces.
+
+29. INPUT: 'set z'
+    OUTPUT: 'Usage: set <var_name> <var_value>'
+    This command tries to set a new variable z without providing any value.
+    Hence the shell throws a Usage error, prompting the user to supply the
+    the variable with its value.
+    
+30. INPUT: 'set $z' 
+    OUTPUT: 'Undeclared Variable $z
+    	    Usage: set <var_name> <var_value>'
+    Notice that this time, the user tries to set $z, but since z has not been
+    declared yet, the shell throws the error of Undeclared variable first, and
+    then prompts the user about how to use the set command.
+
+31. INPUT: 'set $z Duke'
+     OUTPUT 'Undeclared Variable $z
+     	     Syntax Error. Variable Name: $z is invalid!
+     This too is correct. Notice that that the shell does not recognize $z to
+     be in its declared variable list, hence throws the Undeclared variable error.
+     In addition, it also tries to set the variable with name '$z' to value
+     Duke, which is invalid because the variable name can only be a combination
+     of numbers, letters and Underscores.
+
+32. INPUT: 'set %var value'
+    OUTPUT: 'Syntax Error. Variable name: %var is invalid!'
+    This is similar to the previous case where the variable name is invalid and
+    cannot contain characters or special values. 
+
+33. INPUT: 'set z Duke
+    	   echo $z'
+    OUTPUT: '//z is now "Duke"
+	    Duke
+    	    Program exited with status 0'
+    This time we have set the variable $z to value Duke.
+
+34. INPUT: 'set $z University
+    	   echo $Duke'
+    OUTPUT: '//Duke is now "University"
+	    University
+    	    Program exited with status 0'
+    This is correct because the earlier declared variable 'z = Duke' is replaced
+    by the shell, hence declaring the variable 'Duke = University'. Hence
+    printing $Duke will print its value which is University. 
+
+35. INPUT: 'set x ECE
+    	    set y 551
+    	    set z $x$y
+	    echo $z'
+    OUTPUT: '//x is now "ECE"
+    	     //y is now "551"
+	     //z is now "ECE551"
+	     ECE551
+     	     Program exited with status 0'
+    This behavior is correct because we have a situation as follows-
+    'x = ECE', 'y = 551', Now, 'z = valueof(x)valueof(y) = ECE551'. Hence the
+    shell sets the value of variable z to be eaqual to the value of x and y
+    respectively by replacing their variable declarations to their corresponding
+    values respectively.
+
+36. INPUT: 'set $x$y AOP
+    	    echo $ECE551'
+    	   
+    OUTPUT: '//ECE551 is now "AOP"
+    	     AOP
+	     Program exited with status 0'
+    This too is correct. The shell interprets the declared variable '$x$y' as
+    'ECE''551' combined together and hence sets the variable 'ECE551' to its
+    value AOP and prints the same. 
+    
+37. INPUT: 'echo $a'
+    OUTPUT: 'Undeclared Variable $a
+    	     $a
+	     Program exited with status 0'
+    This is correct. When the echo command is invoked with a $a variable
+    which is not declared, the shell first prints the prompt that the
+    variable $a is not declared and then prints the exact argument as is.
+
+38. INPUT: 'set a_path PATH=/bin/
+    	    echo $a_path
+    	    env'
+    OUTPUT: '//a_path is now "PATH=/bin/"
+    	     PATH=/bin/'
+	     Environment variables present already
+    Notice that although the variable 'a_path' is set to the 'PATH=/bin/', it
+    is not exported to the environment variables yet. 
+    
+39. INPUT: 'export a_path
+    	    env'
+    OUTPUT: 'ECE551PATH=/usr/local/sbin...
+    	     a_path=PATH=/bin/
+	     Program exited with status 0'
+    The export command exports the already declared variable into the environment
+    variable list which includes preprocessed ECE551PATH as well as other
+    exported variables as well.
+
+40. INPUT: 'export $b'
+    OUTPUT: 'Undeclared variable $b'
+    This is correct because the variable $b is undeclared at the moment and
+    hence cannot be exported.
+
+41. INPUT: 'export duke_university'
+    OUTPUT: 'Usage: variable name should start with $, try: $<var_name>'
+    This is correct because the export command takes in only the variable name
+    one at a time. Hence if a non-variable value cannot be exported and the
+    shell tries to prompt the user about the correct usage.
+
+42. INPUT: 'set a_path PATH=/home/jt292/
+    	    export a_path
+	    env'
+    OUTPUT: '//a_path is now "PATH=/home/jt292"
+    	     ECE551PATH=/usr/local/sbin
+    	     a_path=PATH=/home/jt292/
+	     Program exited with status 0'
+    Notice that this is correct as we have updated the variable a_path and hence
+    upon exporting the updated value, the shell also updated its old environment
+    variable value, leading to variable updated value showing up in env.
+
+43. INPUT: 'set v hello
+    	    inc v'
+    OUTPUT: '//v is now "hello"
+    	     //v is now "1"
+    This is correct because the value of v is originally a string. After call
+    ing inc command, the shell tries to interpret the value as a number, but
+    since its not in base10, the initial value of v is treated as 0 and incremented
+    to 1.
+
+44. INPUT: 'inc v
+    	    inc v
+	    inc v'
+    OUTPUT: '//v is now "2"
+    	     //v is now "3"
+	     //v is now "4"'
+    This is correct because the shell now has set the value of v to 1. Now
+    subsequent calls on v increase the value of this variable by 1 each time.
+
+45. INPUT: 'set number 100
+    	    inc number
+	    inc number'
+    OUTPUT: '//number is now "100"
+    	     //number is now "101"
+	     //number is now "102"'
+    This behavior is correct because the command inc is understands that the
+    value of the variable 'number' is a number of base10 and thus simply
+    increments the existing value by 1 in each call.
+
+46. INPUT: 'inc newnumber'
+    OUTPUT: '//newnumber is now "1"
+    This behavior is also correct because if the variable is not already declared,
+    then the inc command sets its value to zero and increments it. Hence, in
+    this case, newnumber is added to the unordered map and its value is incremented.
+
+47. INPUT: 'echo $newnumber'
+    OUTPUT: '1
+    	     Program exited with status 0'
+    As discussed in the previous point, the inc command has added the newnumber
+    as a variable and set its value to 1. Hence calling for the value of this
+    variable prints its value.
+
+48. INPUT: 'inc'
+    OUTPUT: 'Usage: inc <var_name>'
+    This is correct because inc accepts only one argument which is the variable
+    name. Here since we have not supplied any variable name, it prints the error
+    message prompting the user with the correct Usage.
+
+49. INPUT: 'inc a b c d'
+    OUTPUT: 'Usage: inc <var_name>'
+    This is the same as previous result. Inc accepts only one variable and
+    trying to pass more may create problems.
+
+50. INPUT: 'cat < myshell.cpp'
+    OUTPUT: Prints the myshell.cpp program.
+    This is the correct behavior because the shell parses the input redirection
+    as a token and redirects the contents of the file myshell.cpp to the arguments
+    of the command cat, hence cat prints the contents of myshell.cpp
+    
+51. INPUT: 'cat < MYPROGRAM'
+    OUTPUT: 'Input Redirection Error: No such file or directory
+    	     Program exited with status 1'
+    This is correct because the file descriptor for input redirection does not
+    find any program named MYPROGRAM and hence fails to open the said file. Hence
+    raising the error and prompting back the shell.
+
+52. INPUT: 'echo -all > ls_input
+    	    cat ls_input'
+    OUTPUT: '-all'
+    This is the correct behavior as the output redirection token allows the output
+    of echo -a command to be redirected to the stdin of ls_input which is opened
+    and writtedn with the said value.
+
+53. INPUT: 'ls < ls_input > out
+    	    cat out'
+    OUTPUT: Stores the output of the command ls with the argument specified in ls_input
+    This is the correct behavior as we can notice that the argument present in
+    ls_input was first input_redirected to the ls command whose overall output
+    was then output redirected and stored as contents in the out file.
+
+54. INPUT: 'exit'
+    OUTPUT: 'exiting...'
+    Whenever the user types in the exit command, the shell will start the exit
+    process, invoking freeing up of allocd memory and print the prompt 'exiting...'
+    and then exit properly.
+
+55. INPUT: 'EOF'
+    OUTPUT: 'exiting...'
+    Similar to the exit command, whenever the user types EOF (often Ctrl D on
+    the keyboard), it triggers the same response as the exit command initiating
+    memory cleanup and shutting down the shell, displaying 'exiting...' prompt
+    to let the user know that the shell has exited.
+
+---
+
+
+
